@@ -17,6 +17,7 @@ import java.sql.*;
 
 import org.mindrot.jbcrypt.BCrypt;
 
+
 public class PageController {
 
     private Stage stage;
@@ -224,5 +225,4 @@ public class PageController {
             return false;
         }
     }
-
 }
