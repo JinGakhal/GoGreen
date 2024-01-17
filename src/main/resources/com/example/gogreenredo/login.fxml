@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="520.0" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.gogreenredo.PageController">
+   <left>
+      <AnchorPane prefHeight="407.0" prefWidth="228.0" style="-fx-background-color: #90EE90;" BorderPane.alignment="CENTER">
+         <children>
+            <Label alignment="CENTER" layoutY="94.0" prefHeight="17.0" prefWidth="228.0" text="GoGreen" textFill="WHITE">
+               <font>
+                  <Font name="Arial Bold" size="24.0" />
+               </font>
+            </Label>
+            <Label alignment="CENTER" layoutY="151.0" prefHeight="17.0" prefWidth="228.0" text="Personal App" textFill="WHITE">
+               <font>
+                  <Font name="Arial Bold" size="18.0" />
+               </font>
+            </Label>
+            <Label alignment="CENTER" layoutY="354.0" prefHeight="17.0" prefWidth="228.0" text="© 2023 GoGreen Inc, | All Rights Reserved." textFill="WHITE">
+               <font>
+                  <Font name="Arial" size="10.0" />
+               </font>
+            </Label>
+         </children>
+      </AnchorPane>
+   </left>
+   <right>
+      <AnchorPane prefHeight="400.0" prefWidth="332.0" BorderPane.alignment="CENTER">
+         <children>
+            <Label alignment="CENTER" layoutX="32.0" layoutY="36.0" prefHeight="17.0" prefWidth="228.0" text="Inloggen">
+               <font>
+                  <Font name="Arial Bold" size="24.0" />
+               </font>
+            </Label>
+            <Label alignment="CENTER" layoutX="24.0" layoutY="100.0" prefHeight="17.0" prefWidth="101.0" text="Email">
+               <font>
+                  <Font name="Arial Bold" size="14.0" />
+               </font>
+            </Label>
+            <Label alignment="CENTER" layoutX="24.0" layoutY="139.0" prefHeight="17.0" prefWidth="101.0" text="Wachtwoord">
+               <font>
+                  <Font name="Arial Bold" size="14.0" />
+               </font>
+            </Label>
+            <TextField fx:id="emailInputField" layoutX="125.0" layoutY="96.0" promptText="email" />
+            <PasswordField fx:id="passwordInputField" layoutX="125.0" layoutY="135.0" promptText="wachtwoord" />
+            <Button fx:id="loginButton" layoutX="32.0" layoutY="187.0" mnemonicParsing="false" onAction="#onLoginButtonClick" prefHeight="25.0" prefWidth="241.0" style="-fx-background-color: #90EE90;" text="Login" textFill="WHITE">
+               <font>
+                  <Font name="Arial Bold" size="14.0" />
+               </font>
+            </Button>
+            <Button fx:id="registerButton" layoutX="32.0" layoutY="260.0" mnemonicParsing="false" onAction="#onRegisterButtonClick" prefHeight="25.0" prefWidth="241.0" style="-fx-background-color: #90EE90;" text="Registreren" textFill="WHITE">
+               <font>
+                  <Font name="Arial Bold" size="14.0" />
+               </font>
+            </Button>
+            <Button fx:id="closeButton" layoutX="159.0" layoutY="345.0" mnemonicParsing="false" onAction="#onCloseButtonClick" prefHeight="29.0" prefWidth="116.0" style="-fx-background-color: Fe2c54;" text="Afsluiten" textFill="WHITE">
+               <font>
+                  <Font name="Arial Bold" size="14.0" />
+               </font>
+            </Button>
+            <Label fx:id="warningLabel" alignment="CENTER" layoutX="34.0" layoutY="72.0" prefHeight="20.0" prefWidth="227.0" textFill="#db5a5a">
+               <font>
+                  <Font name="Arial Italic" size="12.0" />
+               </font>
+            </Label>
+         </children>
+      </AnchorPane>
+   </right>
+</BorderPane>
