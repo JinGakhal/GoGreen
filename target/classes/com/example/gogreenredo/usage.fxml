@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.chart.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
@@ -68,17 +67,30 @@
       </AnchorPane>
    </top>
    <center>
-      <AnchorPane prefHeight="400.0" prefWidth="332.0" BorderPane.alignment="CENTER">
+<!--      <AnchorPane prefHeight="400.0" prefWidth="332.0" BorderPane.alignment="CENTER">-->
+<!--         <children>-->
+<!--             <StackedAreaChart fx:id="areaChart" layoutX="118.0" layoutY="21.0" prefHeight="199.0" prefWidth="282.0">-->
+<!--                 <xAxis>-->
+<!--                     <NumberAxis side="BOTTOM" />-->
+<!--                 </xAxis>-->
+<!--                 <yAxis>-->
+<!--                     <NumberAxis side="LEFT" />-->
+<!--                 </yAxis>-->
+<!--             </StackedAreaChart>-->
+<!--         </children>-->
+<!--      </AnchorPane>-->
+       <AnchorPane fx:id="tableAnchorPane" prefHeight="400.0" prefWidth="332.0" BorderPane.alignment="CENTER">
          <children>
-             <StackedAreaChart layoutX="119.0" layoutY="21.0" prefHeight="199.0" prefWidth="282.0" fx:id="areaChart">
-                 <xAxis>
-                     <NumberAxis side="BOTTOM" />
-                 </xAxis>
-                 <yAxis>
-                     <NumberAxis side="LEFT" />
-                 </yAxis>
-             </StackedAreaChart>
-         </children>
-      </AnchorPane>
+            <Label alignment="CENTER" layoutX="14.0" layoutY="25.0" prefHeight="21.0" prefWidth="250.0" text="Live Verbruik:" textAlignment="CENTER">
+               <font>
+                  <Font name="Arial Bold" size="18.0" />
+               </font>
+            </Label>
+             <Label fx:id="liveFeedLabel" alignment="CENTER" layoutX="256.0" layoutY="25.0" prefHeight="21.0" prefWidth="249.0" text="laden..." textAlignment="CENTER">
+                 <font>
+                     <Font name="Arial Bold" size="18.0" />
+                 </font>
+             </Label>
+         </children></AnchorPane>
    </center>
 </BorderPane>

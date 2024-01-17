@@ -5,10 +5,8 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.chart.StackedAreaChart;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.PasswordField;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
+import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
 import javafx.scene.Scene;
 import javafx.scene.Parent;
@@ -19,7 +17,30 @@ import javafx.scene.chart.AreaChart;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
 import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.Date;
+
+import javafx.beans.property.SimpleFloatProperty;
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
+import javafx.event.ActionEvent;
+import javafx.fxml.FXML;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.ToolBar;
+import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.GridPane;
+import javafx.util.Duration;
 
 import java.io.IOException;
 import java.sql.*;
@@ -51,6 +72,9 @@ public class PageController {
     private TextField currentPasswordField;
     @FXML
     private TextField newPasswordField;
+    @FXML
+    private Label liveFeedLabel;
+
 
     public PageController() {
     }
@@ -101,7 +125,8 @@ public class PageController {
 
     public void onUsageButtonClick(ActionEvent event) {
         loadPage("usage.fxml", event);
-        populateChart();
+        // populateChart();
+        populateTable();
     }
 
     public void onSubscriptionsButtonClick(ActionEvent event) {
@@ -265,23 +290,152 @@ public class PageController {
 
                 XYChart.Series<Number, Number> series = new XYChart.Series<>();
 
+                // Calculate start time (4 hours ago)
+                long fourHoursAgoMillis = System.currentTimeMillis() - (4 * 60 * 60 * 1000);
+
                 while (resultSet.next()) {
                     Timestamp timestamp = resultSet.getTimestamp("measurement_time");
                     float sensorValue = resultSet.getFloat("sensor_value");
 
-                    // Convert timestamp to a numeric value
-                    long timestampMillis = timestamp.getTime();
-                    Date date = new Date(timestampMillis);
-                    double numericValue = date.getTime();
-
-                    series.getData().add(new XYChart.Data<>(numericValue, sensorValue));
+                    // Only add data within the past 4 hours
+                    if (timestamp.getTime() >= fourHoursAgoMillis) {
+                        // Convert timestamp to a numeric value
+                        double numericValue = timestamp.getTime();
+                        series.getData().add(new XYChart.Data<>(numericValue, sensorValue));
+                    }
                 }
 
                 stackedAreaChart.getData().add(series);
+
+                // Set the X-axis bounds
+                NumberAxis xAxis = (NumberAxis) stackedAreaChart.getXAxis();
+                xAxis.setLowerBound(fourHoursAgoMillis);
+                xAxis.setUpperBound(System.currentTimeMillis());
+
+                // Set X-axis label formatter (example format, adjust as needed)
+                xAxis.setTickLabelFormatter(new NumberAxis.DefaultFormatter(xAxis) {
+                    @Override
+                    public String toString(Number object) {
+                        return new SimpleDateFormat("HH:mm").format(new Date(object.longValue()));
+                    }
+                });
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
+
+    private TableView<DataItem> dataTable;
+
+    private void populateTable() {
+        if (scene == null) {
+            System.err.println("Scene is null. Unable to populate table.");
+            return;
+        }
+
+        // Get data from the database and populate the table
+        DatabaseConnection connectTableData = new DatabaseConnection();
+        try (Connection connectDB = connectTableData.getConnection()) {
+            // Fetch data for the current day
+            String selectQuery = "SELECT measurement_time, sensor_value FROM sensor_data " +
+                    "WHERE DATE(measurement_time) = CURDATE()";
+
+            try (PreparedStatement preparedStatement = connectDB.prepareStatement(selectQuery);
+                 ResultSet resultSet = preparedStatement.executeQuery()) {
+
+                // Initialize the TableView and columns
+                dataTable = new TableView<>();
+                TableColumn<DataItem, String> timeColumn = new TableColumn<>("Time");
+                TableColumn<DataItem, Float> valueColumn = new TableColumn<>("Sensor Value");
+
+                timeColumn.setCellValueFactory(cellData -> new SimpleStringProperty(
+                        new SimpleDateFormat("HH:mm:ss").format(new Date(cellData.getValue().getTime()))));
+                valueColumn.setCellValueFactory(cellData -> new SimpleFloatProperty(cellData.getValue().getValue()).asObject());
+
+                dataTable.getColumns().addAll(timeColumn, valueColumn);
+
+                // Style the TableView
+                dataTable.setPrefSize(300, 150); // Adjust the preferred size as needed
+                dataTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+
+                // Initialize the data list
+                ObservableList<DataItem> dataList = FXCollections.observableArrayList();
+
+                while (resultSet.next()) {
+                    Timestamp timestamp = resultSet.getTimestamp("measurement_time");
+                    float sensorValue = resultSet.getFloat("sensor_value");
+
+                    dataList.add(new DataItem(timestamp.getTime(), sensorValue));
+                }
+
+                dataTable.setItems(dataList);
+
+                // Add the TableView to the center of the scene with a scrollbar
+                AnchorPane tableAnchorPane = (AnchorPane) scene.lookup("#tableAnchorPane");
+                tableAnchorPane.getChildren().add(dataTable);
+
+                ScrollPane scrollPane = new ScrollPane(dataTable);
+                scrollPane.setFitToWidth(true);
+                scrollPane.setFitToHeight(true);
+
+                AnchorPane.setTopAnchor(scrollPane, (tableAnchorPane.getHeight() - scrollPane.getHeight()) / 4);
+                AnchorPane.setLeftAnchor(scrollPane, (tableAnchorPane.getWidth() - scrollPane.getWidth()) / 5);
+
+                tableAnchorPane.getChildren().add(scrollPane);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    // Define a simple class to hold data for the TableView
+    public static class DataItem {
+        private final SimpleObjectProperty<Long> time;
+        private final SimpleFloatProperty value;
+
+        public DataItem(long time, float value) {
+            this.time = new SimpleObjectProperty<>(time);
+            this.value = new SimpleFloatProperty(value);
+        }
+
+        public Long getTime() {
+            return time.get();
+        }
+
+        public float getValue() {
+            return value.get();
+        }
+    }
+    private Timeline liveFeedTimeline;
+
+    @FXML
+    public void initialize() {
+        // Initialize the Timeline for updating live feed every 3 seconds
+        liveFeedTimeline = new Timeline(new KeyFrame(Duration.seconds(3), this::updateLiveFeed));
+        liveFeedTimeline.setCycleCount(Timeline.INDEFINITE);
+        liveFeedTimeline.play();
+    }
+
+    private void updateLiveFeed(ActionEvent event) {
+        // Fetch the latest sensor data and update the liveFeedLabel
+        DatabaseConnection connectLatestSensorData = new DatabaseConnection();
+        try (Connection connectDB = connectLatestSensorData.getConnection()) {
+            String selectLatestDataQuery = "SELECT sensor_value FROM sensor_data ORDER BY measurement_time DESC LIMIT 1";
+
+            try (PreparedStatement preparedStatement = connectDB.prepareStatement(selectLatestDataQuery);
+                 ResultSet resultSet = preparedStatement.executeQuery()) {
+
+                if (resultSet.next()) {
+                    float latestSensorValue = resultSet.getFloat("sensor_value");
+                    liveFeedLabel.setText(String.format("%.2f", latestSensorValue));
+                } else {
+                    liveFeedLabel.setText("Laadfout");
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
 
 }
