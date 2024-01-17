@@ -4,6 +4,7 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
+import javafx.scene.chart.StackedAreaChart;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
@@ -12,11 +13,18 @@ import javafx.stage.Stage;
 import javafx.scene.Scene;
 import javafx.scene.Parent;
 
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.scene.chart.AreaChart;
+import javafx.scene.chart.NumberAxis;
+import javafx.scene.chart.XYChart;
+import java.sql.Timestamp;
+import java.util.Date;
+
 import java.io.IOException;
 import java.sql.*;
 
 import org.mindrot.jbcrypt.BCrypt;
-
 
 public class PageController {
 
@@ -60,15 +68,24 @@ public class PageController {
 
     private void loadPage(String fxmlFileName, ActionEvent event) {
         try {
-            Parent root = FXMLLoader.load(getClass().getResource(fxmlFileName));
-            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+            FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlFileName));
+            Parent root = loader.load();
+
+            // Get the scene from the loaded root
             Scene scene = new Scene(root);
+
+            // Set the scene to the stage
+            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
             stage.setScene(scene);
             stage.show();
+
+            // Store the scene in the class variable
+            this.scene = scene;
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
+
 
     public void onLoginButtonClick(ActionEvent e) {
         if (emailInputField.getText().isBlank() && passwordInputField.getText().isBlank())  {
@@ -84,6 +101,7 @@ public class PageController {
 
     public void onUsageButtonClick(ActionEvent event) {
         loadPage("usage.fxml", event);
+        populateChart();
     }
 
     public void onSubscriptionsButtonClick(ActionEvent event) {
@@ -120,8 +138,6 @@ public class PageController {
 
                 if (verifyPassword(passwordInputField.getText(), storedHash)) {
                     userEmail = emailInputField.getText();
-                    System.out.print(userEmail);
-
                     Parent root = FXMLLoader.load(getClass().getResource("home.fxml"));
                     scene = new Scene(root);
                     stage.setScene(scene);
@@ -225,4 +241,47 @@ public class PageController {
             return false;
         }
     }
+
+    private void populateChart() {
+        if (scene == null) {
+            System.err.println("Scene is null. Unable to populate chart.");
+            return;
+        }
+
+        // Get data from the database and populate the chart
+        DatabaseConnection connectChartData = new DatabaseConnection();
+        try (Connection connectDB = connectChartData.getConnection()) {
+            String selectQuery = "SELECT measurement_time, sensor_value FROM sensor_data";
+            try (PreparedStatement preparedStatement = connectDB.prepareStatement(selectQuery);
+                 ResultSet resultSet = preparedStatement.executeQuery()) {
+
+                StackedAreaChart<Number, Number> stackedAreaChart = (StackedAreaChart<Number, Number>) scene.lookup("#areaChart");
+                if (stackedAreaChart == null) {
+                    System.err.println("StackedAreaChart is null. Unable to populate chart.");
+                    return;
+                }
+
+                stackedAreaChart.getData().clear();
+
+                XYChart.Series<Number, Number> series = new XYChart.Series<>();
+
+                while (resultSet.next()) {
+                    Timestamp timestamp = resultSet.getTimestamp("measurement_time");
+                    float sensorValue = resultSet.getFloat("sensor_value");
+
+                    // Convert timestamp to a numeric value
+                    long timestampMillis = timestamp.getTime();
+                    Date date = new Date(timestampMillis);
+                    double numericValue = date.getTime();
+
+                    series.getData().add(new XYChart.Data<>(numericValue, sensorValue));
+                }
+
+                stackedAreaChart.getData().add(series);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
 }

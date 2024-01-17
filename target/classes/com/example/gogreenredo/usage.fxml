@@ -70,14 +70,14 @@
    <center>
       <AnchorPane prefHeight="400.0" prefWidth="332.0" BorderPane.alignment="CENTER">
          <children>
-            <StackedAreaChart layoutX="119.0" layoutY="21.0" prefHeight="199.0" prefWidth="282.0">
-              <xAxis>
-                <NumberAxis side="BOTTOM" />
-              </xAxis>
-              <yAxis>
-                <NumberAxis side="LEFT" />
-              </yAxis>
-            </StackedAreaChart>
+             <StackedAreaChart layoutX="119.0" layoutY="21.0" prefHeight="199.0" prefWidth="282.0" fx:id="areaChart">
+                 <xAxis>
+                     <NumberAxis side="BOTTOM" />
+                 </xAxis>
+                 <yAxis>
+                     <NumberAxis side="LEFT" />
+                 </yAxis>
+             </StackedAreaChart>
          </children>
       </AnchorPane>
    </center>
